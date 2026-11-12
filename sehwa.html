@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>한걸음 — 공부와 수행평가 플래너</title>
+<style>
+:root {
+  --bg:#f5f6fb;
+  --card:#fff;
+  --text:#23283d;
+  --muted:#7b8195;
+  --line:#e8eaf3;
+  --primary:#6958e8;
+  --soft:#f0edff;
+  --green:#21836d;
+  --red:#c44f60;
+  --amber:#936515;
+}
+* { box-sizing:border-box }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif;
+  line-height:1.6;
+}
+button,input,select { font:inherit }
+button {
+  cursor:pointer;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:9px 13px;
+  background:white;
+  color:var(--text);
+  font-weight:650;
+}
+button:hover:not(:disabled) { background:#f3f1ff }
+button:disabled { opacity:.4; cursor:not-allowed }
+button:focus-visible,input:focus-visible,select:focus-visible {
+  outline:3px solid #bab2ff;
+  outline-offset:2px;
+}
+button.primary {
+  background:var(--primary);
+  border-color:var(--primary);
+  color:white;
+}
+button.primary:hover { background:#5847d3 }
+.small { font-size:12px; padding:6px 10px }
+.danger { color:var(--red) }
+.wrap { max-width:1180px; margin:auto; padding:30px 22px 65px }
+header,.row,.between,.actions { display:flex; align-items:center; gap:10px }
+header,.between { justify-content:space-between }
+header { flex-wrap:wrap; margin-bottom:30px }
+.brand { display:flex; align-items:center; gap:12px }
+.brand-icon {
+  width:44px; height:44px; display:grid; place-items:center;
+  background:var(--primary); color:white; border-radius:15px;
+  font-size:25px; font-weight:800;
+}
+h1,h2,h3,p { margin:0 }
+h1 { font-size:23px; letter-spacing:-1px }
+h2 { font-size:19px; letter-spacing:-.5px }
+h3 { font-size:15px }
+.muted,.help { color:var(--muted) }
+.muted { font-size:13px }
+.help { font-size:12px; margin-top:7px }
+.actions { flex-wrap:wrap }
+.hero { margin-bottom:22px }
+.hero .eyebrow { color:var(--primary); font-size:12px; font-weight:750 }
+.hero h2 { font-size:29px; line-height:1.4; margin:6px 0 }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px }
+.stat,.card {
+  background:var(--card); border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:0 7px 25px rgba(40,40,90,.035);
+}
+.stat { padding:18px 20px }
+.stat span { color:var(--muted); font-size:12px }
+.stat strong { display:block; font-size:26px; margin-top:4px }
+.layout { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px }
+.column { display:flex; flex-direction:column; gap:20px; min-width:0 }
+.card { padding:22px }
+.section-head {
+  display:flex; justify-content:space-between;
+  align-items:center; gap:12px; margin-bottom:16px;
+}
+.badge {
+  display:inline-flex; padding:3px 8px; border-radius:7px;
+  font-size:11px; font-weight:750; white-space:nowrap;
+  color:var(--primary); background:var(--soft);
+}
+.badge.green { background:#e9f7f1; color:var(--green) }
+.badge.red { background:#fff0f2; color:var(--red) }
+.badge.gray { background:#f0f2f7; color:var(--muted) }
+input:not([type=checkbox]),select {
+  width:100%; min-width:0; padding:10px 11px; border:1px solid #dfe2ed;
+  border-radius:10px; color:var(--text); background:white;
+}
+input[type=checkbox] {
+  accent-color:var(--primary); width:19px; height:19px;
+  cursor:pointer; flex-shrink:0;
+}
+label { display:block; font-size:13px; font-weight:700; margin-bottom:7px }
+.field { margin-bottom:15px }
+.check-label { display:flex; align-items:center; gap:8px; font-weight:500 }
+.week-scroll { overflow-x:auto; padding:2px 1px 8px }
+.week {
+  display:grid; grid-template-columns:repeat(7,minmax(76px,1fr));
+  gap:7px;
+}
+.day-btn {
+  padding:10px 5px; text-align:center; border-radius:12px;
+  background:#fafafe; min-height:94px;
+}
+.day-btn.selected { border-color:var(--primary); background:var(--soft) }
+.day-btn.today .day-num { color:var(--primary) }
+.day-name { display:block; font-size:11px; color:var(--muted) }
+.day-num { display:block; font-size:19px; font-weight:800 }
+.day-load { display:block; font-size:10px; color:var(--muted) }
+.day-load.over { color:var(--red) }
+.day-bar {
+  height:3px; border-radius:5px; background:#e8e6f1;
+  margin:7px 6px 0; overflow:hidden;
+}
+.day-bar i { display:block; height:100%; background:var(--primary) }
+.date-nav { display:flex; align-items:center; gap:7px }
+.date-nav input { max-width:155px; padding:6px 8px; font-size:12px }
+.day-summary {
+  padding:14px 15px; background:#f8f8fd; border-radius:12px;
+  margin:15px 0 4px;
+}
+.progress {
+  height:6px; border-radius:8px; background:#eae9f3;
+  overflow:hidden; margin:10px 0 5px;
+}
+.progress i { display:block; height:100%; border-radius:8px; background:var(--primary) }
+.todo {
+  display:flex; align-items:center; gap:12px;
+  padding:16px 0; border-bottom:1px solid var(--line);
+}
+.todo:last-child { border-bottom:0 }
+.todo-content { flex:1; min-width:0 }
+.todo-title { font-size:14px; font-weight:750; overflow-wrap:anywhere }
+.todo-meta { font-size:12px; color:var(--muted); margin-top:3px }
+.todo.done .todo-title { color:#969bad; text-decoration:line-through }
+.todo.done { opacity:.8 }
+.todo-controls { display:flex; gap:5px; flex-shrink:0 }
+.empty {
+  background:#fafafe; padding:27px 15px; text-align:center;
+  border-radius:12px; color:var(--muted); font-size:13px;
+}
+.empty strong { display:block; color:var(--text); margin-bottom:5px }
+.notice {
+  padding:13px 16px; margin-bottom:18px; border-radius:12px;
+  background:#fff6e3; border:1px solid #f0e0ba;
+  color:var(--amber); font-size:12px;
+}
+.notice ul { margin:5px 0 0; padding-left:19px }
+.task { border:1px solid var(--line); border-radius:13px; padding:16px; margin-top:12px }
+.task-title { font-size:15px; font-weight:800; overflow-wrap:anywhere }
+.task-meta { display:flex; flex-wrap:wrap; align-items:center; gap:7px; margin-top:5px }
+.task details { margin-top:10px }
+summary { font-size:12px; color:var(--muted); cursor:pointer }
+.step-status { display:flex; justify-content:space-between; gap:10px; font-size:12px; padding:7px 0 }
+.step-status span:first-child { overflow-wrap:anywhere }
+.tip {
+  padding:13px; margin-top:15px; border-radius:12px;
+  background:var(--soft); color:#60558f; font-size:12px;
+}
+dialog {
+  width:min(590px,calc(100% - 24px));
+  max-height:90vh; overflow-y:auto;
+  border:0; border-radius:20px; padding:24px;
+  color:var(--text); box-shadow:0 25px 100px #15163840;
+}
+dialog::backdrop { background:#20234466; backdrop-filter:blur(3px) }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px }
+.dialog-footer {
+  display:flex; justify-content:flex-end; gap:8px;
+  padding-top:17px; margin-top:20px; border-top:1px solid var(--line);
+}
+.step-editor { display:flex; align-items:center; gap:7px; margin:9px 0 }
+.step-editor .step-minutes { width:85px; flex-shrink:0 }
+.unit { font-size:12px; color:var(--muted) }
+footer { margin-top:25px; text-align:center; color:var(--muted); font-size:12px }
+#toast {
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+  max-width:calc(100% - 28px); padding:12px 17px;
+  background:#282c43; color:white; border-radius:12px;
+  font-size:13px; z-index:100;
+}
+#toast[hidden] { display:none }
+@media(max-width:900px) {
+  .layout { grid-template-columns:1fr }
+}
+@media(max-width:600px) {
+  .wrap { padding:20px 14px 55px }
+  header { gap:16px }
+  .hero h2 { font-size:25px }
+  .stats { gap:8px }
+  .stat { padding:14px 12px }
+  .stat strong { font-size:22px }
+  .card { padding:16px }
+  .section-head { flex-wrap:wrap }
+  .week { grid-template-columns:repeat(7,78px) }
+  .form-grid { grid-template-columns:1fr; gap:0 }
+  .todo { gap:8px }
+  .todo-controls { flex-direction:column }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="brand-icon">↗</div>
+      <div>
+        <h1>한걸음</h1>
+        <p class="muted">공부와 수행평가를 한 번에</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="undoBtn" class="small" disabled>되돌리기</button>
+      <button id="backupBtn" class="small">백업</button>
+      <button id="restoreBtn" class="small">복원</button>
+      <button id="addStudyBtn">＋ 공부 계획</button>
+      <button id="addTaskBtn" class="primary">＋ 수행평가</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <p id="todayLabel" class="eyebrow"></p>
+    <h2>오늘의 공부와 수행평가,<br>무리 없이 함께.</h2>
+    <p class="muted">공부 계획을 먼저 넣으면, 남는 시간에 수행평가를 나눠 배치해요.</p>
+  </section>
+
+  <section class="stats">
+    <div class="stat">
+      <span>오늘 전체 계획</span>
+      <strong id="todayMinutes">0분</strong>
+    </div>
+    <div class="stat">
+      <span>오늘 완료율 · 시간 기준</span>
+      <strong id="todayProgress">0%</strong>
+    </div>
+    <div class="stat">
+      <span>진행 중인 수행평가</span>
+      <strong id="activeTasks">0개</strong>
+    </div>
+  </section>
+
+  <div id="warnings"></div>
+
+  <div class="layout">
+    <main class="column">
+      <section class="card">
+        <div class="section-head">
+          <h2>날짜별 공부 계획</h2>
+          <div class="date-nav">
+            <button id="prevWeek" class="small" aria-label="일주일 전">←</button>
+            <input id="selectedDate" type="date" aria-label="볼 날짜">
+            <button id="nextWeek" class="small" aria-label="일주일 후">→</button>
+            <button id="goToday" class="small">오늘</button>
+          </div>
+        </div>
+
+        <div class="week-scroll">
+          <div id="week" class="week"></div>
+        </div>
+
+        <div class="day-summary">
+          <div class="between">
+            <strong id="dayTitle"></strong>
+            <span id="dayCapacity" class="badge"></span>
+          </div>
+          <div class="progress"><i id="dayProgressBar"></i></div>
+          <p id="daySummary" class="help"></p>
+        </div>
+
+        <div id="dayList"></div>
+
+        <div class="between" style="margin-top:15px;flex-wrap:wrap">
+          <button id="addStudyHere" class="small">＋ 이 날짜에 공부 추가</button>
+          <button id="bringOverdue" class="small" hidden>지난 미완료 공부 → 오늘</button>
+        </div>
+
+        <p class="help">
+          체크한 항목은 해당 날짜에 완료 기록으로 남아요.
+          공부 계획과 완료 기록은 유지하고, 미완료 수행평가만 다시 배치해요.
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>수행평가</h2>
+            <p class="help">마감일과 작업 단계를 입력하면 공부 계획 사이에 배치해요.</p>
+          </div>
+          <button id="addTaskBtn2" class="small">＋ 추가</button>
+        </div>
+        <div id="taskList"></div>
+      </section>
+    </main>
+
+    <aside class="column">
+      <section class="card">
+        <h2>하루 시간 설정</h2>
+        <p class="help" style="margin-bottom:17px">
+          공부 + 수행평가를 합친 하루 한도예요.
+        </p>
+
+        <form id="settingsForm">
+          <div class="field">
+            <label for="dailyLimit">하루에 사용할 수 있는 시간</label>
+            <div class="row">
+              <input id="dailyLimit" type="number" min="10" max="720" step="1" required>
+              <span class="muted">분</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="bufferDays">수행평가 마감 전 여유</label>
+            <select id="bufferDays">
+              <option value="0">마감 당일까지 사용</option>
+              <option value="1">하루 전에 마치기</option>
+              <option value="2">이틀 전에 마치기</option>
+              <option value="3">사흘 전에 마치기</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="check-label">
+              <input id="useWeekend" type="checkbox">
+              주말에도 수행평가 자동 배치
+            </label>
+            <p class="help">직접 넣는 공부 계획은 주말에도 등록할 수 있어요.</p>
+          </div>
+
+          <button class="primary" style="width:100%">설정 적용 · 일정 조율</button>
+        </form>
+
+        <div class="tip">
+          <strong>예를 들어</strong><br>
+          하루 한도 120분<br>
+          수학 50분 + 영어 30분<br>
+          → 수행평가는 최대 40분 배치
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>일정 조율 규칙</h3>
+        <p class="help">
+          ① 직접 입력한 공부 시간을 확보해요.<br>
+          ② 완료한 수행평가 시간도 한도에 포함해요.<br>
+          ③ 남는 시간에 마감이 가까운 수행평가부터 역산 배치해요.<br>
+          ④ 부족하면 여유일 없이 다시 시도해요.<br>
+          ⑤ 그래도 부족하면 앞 단계부터 배치하고 경고해요.
+        </p>
+        <p class="help">
+          공부 계획만으로 하루 한도를 넘으면 임의로 옮기지 않아요.
+          경고를 보고 직접 시간을 조정해 주세요.
+        </p>
+      </section>
+
+      <section class="card">
+        <h3>저장 안내</h3>
+        <p id="storageStatus" class="help">이 브라우저에 자동 저장해요.</p>
+        <p class="help">
+          계정 연동이나 기기 간 동기화는 없어요.
+          중요한 기록은 ‘백업’으로 보관해 주세요.
+        </p>
+        <button id="demoBtn" class="small" style="margin-top:13px">예시 계획 넣기</button>
+      </section>
+    </aside>
+  </div>
+
+  <footer>
+    날짜 단위의 계획 도구예요. 마감 시각·공휴일·학원 시간은 자동 반영하지 않아요.
+  </footer>
+</div>
+
+<!-- 공부 계획 입력 -->
+<dialog id="studyDialog" aria-labelledby="studyDialogTitle">
+  <form id="studyForm">
+    <div class="section-head">
+      <h2 id="studyDialogTitle">공부 계획 추가</h2>
+      <button type="button" class="small" data-close="studyDialog">닫기</button>
+    </div>
+
+    <input id="studyEditingId" type="hidden">
+
+    <div class="field">
+      <label for="studyTitle">할 공부</label>
+      <input id="studyTitle" maxlength="100" placeholder="예: 수학 문제집 32~35쪽" required>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="studySubject">과목</label>
+        <input id="studySubject" maxlength="30" placeholder="예: 수학">
+      </div>
+      <div class="field">
+        <label for="studyDate">공부할 날짜</label>
+        <input id="studyDate" type="date" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="studyMinutes">예상 시간 · 분</label>
+      <input id="studyMinutes" type="number" min="1" max="1440" step="1" value="30" required>
+    </div>
+
+    <p class="help">이 시간을 먼저 확보하고, 남는 시간에 수행평가를 배치해요.</p>
+
+    <div class="dialog-footer">
+      <button type="button" data-close="studyDialog">취소</button>
+      <button type="submit" class="primary">저장 · 일정 조율</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- 수행평가 입력 -->
+<dialog id="taskDialog" aria-labelledby="taskDialogTitle">
+  <form id="taskForm">
+    <div class="section-head">
+      <h2 id="taskDialogTitle">수행평가 추가</h2>
+      <button type="button" class="small" data-close="taskDialog">닫기</button>
+    </div>
+
+    <input id="taskEditingId" type="hidden">
+
+    <div class="field">
+      <label for="taskTitle">수행평가 이름</label>
+      <input id="taskTitle" maxlength="100" placeholder="예: 과학 탐구 보고서" required>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="taskSubject">과목</label>
+        <input id="taskSubject" maxlength="30" placeholder="예: 과학">
+      </div>
+      <div class="field">
+        <label for="taskDue">마감일</label>
+        <input id="taskDue" type="date" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="taskType">과제 유형</label>
+      <select id="taskType">
+        <option value="report">보고서</option>
+        <option value="presentation">발표</option>
+        <option value="worksheet">문제 풀이</option>
+        <option value="custom">직접 구성</option>
+      </select>
+      <p class="help">새 과제에서 유형을 바꾸면 기본 단계가 바뀌어요.</p>
+    </div>
+
+    <div class="between">
+      <label style="margin:0">작업 단계 · 예상 시간</label>
+      <button id="addStepBtn" type="button" class="small">＋ 단계</button>
+    </div>
+    <p class="help">위에서 아래 순서로 진행해요. 예상 시간은 수정할 수 있어요.</p>
+
+    <div id="stepEditor"></div>
+    <p id="taskEstimate" class="help"></p>
+
+    <div class="dialog-footer">
+      <button type="button" data-close="taskDialog">취소</button>
+      <button type="submit" class="primary">저장 · 일정 조율</button>
+    </div>
+  </form>
+</dialog>
+
+<input id="restoreFile" type="file" accept=".json,application/json" hidden>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = "hangeoreum-integrated-v2";
+
+const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, c => ({
+  "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+}[c]));
+
+const uid = () =>
+  "x" + Date.now().toString(36) + Math.random().toString(36).slice(2,10);
+
+function dateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+}
+const today = () => dateKey(new Date());
+const toDate = value => new Date(value + "T12:00:00");
+
+function addDays(value, amount) {
+  const date = toDate(value);
+  date.setDate(date.getDate() + amount);
+  return dateKey(date);
+}
+function validDate(value) {
+  return typeof value === "string"
+    && /^\d{4}-\d{2}-\d{2}$/.test(value)
+    && !Number.isNaN(toDate(value).getTime())
+    && dateKey(toDate(value)) === value;
+}
+function diffDays(a,b) {
+  return Math.round((toDate(a)-toDate(b))/86400000);
+}
+function shortDate(value) {
+  return toDate(value).toLocaleDateString("ko-KR", {
+    month:"numeric", day:"numeric"
+  });
+}
+function weekday(value) {
+  return ["일","월","화","수","목","금","토"][toDate(value).getDay()];
+}
+function monday(value) {
+  return addDays(value,-((toDate(value).getDay()+6)%7));
+}
+function isWeekend(value) {
+  return [0,6].includes(toDate(value).getDay());
+}
+
+const templates = {
+  report:[
+    ["주제 선정",20],
+    ["자료 조사",40],
+    ["개요 작성",20],
+    ["초안 작성",60],
+    ["수정·출처 확인",30],
+    ["최종 점검·제출",10]
+  ],
+  presentation:[
+    ["주제·핵심 메시지 정하기",20],
+    ["자료 조사",40],
+    ["발표 흐름·대본 작성",40],
+    ["슬라이드 제작",60],
+    ["발표 연습",30],
+    ["최종 확인·제출",10]
+  ],
+  worksheet:[
+    ["범위·문항 확인",10],
+    ["문제 풀이",60],
+    ["오답 정리",30],
+    ["누락 확인·제출",10]
+  ],
+  custom:[
+    ["첫 번째 작업",30],
+    ["두 번째 작업",30]
+  ]
+};
+
+function initialState() {
+  return {
+    version:2,
+    settings:{daily:120, buffer:1, weekend:true},
+    studies:[],
+    tasks:[],
+    logs:[]
+  };
+}
+
+/* 저장 데이터·백업 파일 검증 */
+function validateState(raw) {
+  const fail = () => { throw new Error("지원하지 않거나 손상된 백업 파일이에요."); };
+  const integer = (n,min,max) => Number.isInteger(n) && n>=min && n<=max;
+  const text = (v,max) => typeof v==="string" && v.trim().length>0 && v.length<=max;
+  const subject = v => typeof v==="string" && v.length<=30;
+  const ids = new Set();
+
+  function checkId(id) {
+    if (typeof id!=="string" || !/^[a-zA-Z0-9_-]{1,100}$/.test(id) || ids.has(id)) fail();
+    ids.add(id);
+  }
+
+  if (!raw || raw.version!==2 || !raw.settings) fail();
+
+  const settings = raw.settings;
+  if (!integer(settings.daily,10,720)
+      || !integer(settings.buffer,0,3)
+      || typeof settings.weekend!=="boolean") fail();
+
+  if (!Array.isArray(raw.studies) || raw.studies.length>2000
+      || !Array.isArray(raw.tasks) || raw.tasks.length>200
+      || !Array.isArray(raw.logs) || raw.logs.length>10000) fail();
+
+  const latest = addDays(today(),365);
+  const earliest = addDays(today(),-3650);
+  const inRange = d => validDate(d) && d>=earliest && d<=latest;
+
+  const studies = raw.studies.map(s => {
+    if (!s || !text(s.title,100) || !subject(s.subject)
+        || !inRange(s.date) || !integer(s.minutes,1,1440)
+        || typeof s.done!=="boolean") fail();
+    checkId(s.id);
+    return {
+      id:s.id, title:s.title.trim(), subject:s.subject,
+      date:s.date, minutes:s.minutes, done:s.done
+    };
+  });
+
+  const stepMap = new Map();
+
+  const tasks = raw.tasks.map(t => {
+    if (!t || !text(t.title,100) || !subject(t.subject)
+        || !inRange(t.due)
+        || !Object.prototype.hasOwnProperty.call(templates,t.type)
+        || !Array.isArray(t.steps) || !t.steps.length || t.steps.length>20
+        || !Number.isFinite(t.createdAt)) fail();
+    checkId(t.id);
+
+    const steps = t.steps.map(s => {
+      if (!s || !text(s.title,100) || !integer(s.minutes,1,1440)) fail();
+      checkId(s.id);
+      stepMap.set(s.id,{taskId:t.id,minutes:s.minutes});
+      return {id:s.id,title:s.title.trim(),minutes:s.minutes};
+    });
+
+    return {
+      id:t.id, title:t.title.trim(), subject:t.subject,
+      due:t.due, type:t.type, createdAt:t.createdAt, steps
+    };
+  });
+
+  const sums = new Map();
+
+  const logs = raw.logs.map(log => {
+    if (!log || !inRange(log.date) || !integer(log.minutes,1,1440)) fail();
+    checkId(log.id);
+    const step = stepMap.get(log.stepId);
+    if (!step || step.taskId!==log.taskId) fail();
+
+    const sum = (sums.get(log.stepId)||0)+log.minutes;
+    if (sum>step.minutes) fail();
+    sums.set(log.stepId,sum);
+
+    return {
+      id:log.id, taskId:log.taskId, stepId:log.stepId,
+      date:log.date, minutes:log.minutes
+    };
+  });
+
+  return {
+    version:2,
+    settings:{daily:settings.daily,buffer:settings.buffer,weekend:settings.weekend},
+    studies,tasks,logs
+  };
+}
+
+let state = initialState();
+let startupError = "";
+
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) state = validateState(JSON.parse(saved));
+} catch (error) {
+  startupError = "기존 기록을 읽지 못했어요. 새로 저장하기 전 백업 파일을 확인해 주세요.";
+}
+
+let selected = today();
+let plan = {blocks:[],shortfalls:[],mode:"reverse"};
+let undoState = null;
+let toastTimer;
+
+function toast(message) {
+  clearTimeout(toastTimer);
+  $("toast").textContent = message;
+  $("toast").hidden = false;
+  toastTimer = setTimeout(() => $("toast").hidden=true,6500);
+}
+
+function persist() {
+  try {
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+    $("storageStatus").textContent = "이 브라우저에 자동 저장했어요.";
+    return true;
+  } catch (error) {
+    $("storageStatus").textContent = "저장에 실패했어요. 지금 백업을 내려받아 주세요.";
+    return false;
+  }
+}
+
+function change(message, action) {
+  undoState = JSON.stringify(state);
+  action();
+  const saved = persist();
+  syncSettings();
+  render();
+  toast(saved ? message : message+" 저장에 실패했으니 백업해 주세요.");
+}
+
+function completedMinutes(stepId) {
+  return state.logs
+    .filter(log=>log.stepId===stepId)
+    .reduce((sum,log)=>sum+log.minutes,0);
+}
+function remainingTask(task) {
+  return task.steps.reduce(
+    (sum,step)=>sum+step.minutes-completedMinutes(step.id),0
+  );
+}
+function taskTotal(task) {
+  return task.steps.reduce((sum,step)=>sum+step.minutes,0);
+}
+function reservedMinutes(date) {
+  const study = state.studies
+    .filter(s=>s.date===date)
+    .reduce((sum,s)=>sum+s.minutes,0);
+  const completed = state.logs
+    .filter(log=>log.date===date)
+    .reduce((sum,log)=>sum+log.minutes,0);
+  return study+completed;
+}
+
+/*
+ * 공부 계획 + 완료 기록의 시간을 먼저 확보합니다.
+ * 남은 시간에 수행평가를 마감순·단계 역순으로 배치합니다.
+ */
+function makePlan() {
+  const start = today();
+
+  const ordered = state.tasks
+    .filter(task=>remainingTask(task)>0)
+    .slice()
+    .sort((a,b)=>a.due.localeCompare(b.due)||a.createdAt-b.createdAt);
+
+  const active = ordered.filter(task=>task.due>=start);
+  const overdue = ordered.filter(task=>task.due<start);
+
+  const last = active.reduce((date,t)=>t.due>date?t.due:date,start);
+  const dates = [];
+  for (let date=start;date<=last;date=addDays(date,1)) dates.push(date);
+
+  const done = new Map();
+  for (const log of state.logs) {
+    done.set(log.stepId,(done.get(log.stepId)||0)+log.minutes);
+  }
+
+  function attempt(reverse,buffer) {
+    const capacity = dates.map(date => {
+      if (!state.settings.weekend && isWeekend(date)) return 0;
+      return Math.max(0,state.settings.daily-reservedMinutes(date));
+    });
+
+    const blocks = [];
+    const shortfalls = [];
+
+    for (const task of active) {
+      const end = Math.max(0,diffDays(task.due,start)-buffer);
+      let cursor = reverse ? end : 0;
+      let missing = 0;
+
+      const steps = task.steps.map((step,index)=>({step,index}));
+      if (reverse) steps.reverse();
+
+      for (const {step,index} of steps) {
+        let need = step.minutes-(done.get(step.id)||0);
+
+        while (need>0 && cursor>=0 && cursor<=end) {
+          const amount = Math.min(need,capacity[cursor]);
+
+          if (amount>0) {
+            blocks.push({
+              taskId:task.id,stepId:step.id,stepIndex:index,
+              date:dates[cursor],minutes:amount
+            });
+            capacity[cursor]-=amount;
+            need-=amount;
+          }
+          if (need>0) cursor+=reverse?-1:1;
+        }
+        missing+=need;
+      }
+
+      if (missing>0) {
+        shortfalls.push({taskId:task.id,minutes:missing,overdue:false});
+      }
+    }
+
+    return {blocks,shortfalls};
+  }
+
+  let result = attempt(true,state.settings.buffer);
+  let mode = "reverse";
+
+  if (result.shortfalls.length && state.settings.buffer>0) {
+    result = attempt(true,0);
+    mode = "no-buffer";
+  }
+
+  if (result.shortfalls.length) {
+    result = attempt(false,0);
+    mode = "shortage";
+  }
+
+  result.shortfalls.push(...overdue.map(task=>({
+    taskId:task.id,minutes:remainingTask(task),overdue:true
+  })));
+
+  const rank = new Map(ordered.map((task,index)=>[task.id,index]));
+
+  result.blocks.sort((a,b)=>
+    a.date.localeCompare(b.date)
+    || rank.get(a.taskId)-rank.get(b.taskId)
+    || a.stepIndex-b.stepIndex
+  );
+
+  return {...result,mode};
+}
+
+/* 특정 날짜의 공부·수행평가·완료 기록을 통합합니다. */
+function dayItems(date) {
+  const items = state.studies
+    .filter(s=>s.date===date)
+    .map(s=>({
+      kind:"study",id:s.id,title:s.title,
+      subtitle:s.subject||"과목 미지정",
+      minutes:s.minutes,done:s.done
+    }));
+
+  for (const log of state.logs.filter(log=>log.date===date)) {
+    const task = state.tasks.find(t=>t.id===log.taskId);
+    const step = task?.steps.find(s=>s.id===log.stepId);
+    if (!task || !step) continue;
+
+    items.push({
+      kind:"log",id:log.id,title:step.title,
+      subtitle:`${task.subject||"수행평가"} · ${task.title}`,
+      minutes:log.minutes,done:true
+    });
+  }
+
+  plan.blocks.forEach((block,index)=>{
+    if (block.date!==date) return;
+    const task = state.tasks.find(t=>t.id===block.taskId);
+    const step = task.steps.find(s=>s.id===block.stepId);
+
+    items.push({
+      kind:"block",id:String(index),title:step.title,
+      subtitle:`${task.subject||"수행평가"} · ${task.title}`,
+      minutes:block.minutes,done:false
+    });
+  });
+
+  return items;
+}
+
+function dayTotals(date) {
+  const items = dayItems(date);
+  const total = items.reduce((sum,item)=>sum+item.minutes,0);
+  const done = items.filter(item=>item.done).reduce((sum,item)=>sum+item.minutes,0);
+  return {total,done,percent:total?Math.round(done/total*100):0};
+}
+
+function syncSettings() {
+  $("dailyLimit").value = state.settings.daily;
+  $("bufferDays").value = state.settings.buffer;
+  $("useWeekend").checked = state.settings.weekend;
+}
+
+function render() {
+  plan = makePlan();
+
+  $("todayLabel").textContent = new Date().toLocaleDateString("ko-KR",{
+    year:"numeric",month:"long",day:"numeric",weekday:"long"
+  });
+
+  const totals = dayTotals(today());
+  $("todayMinutes").textContent = totals.total+"분";
+  $("todayProgress").textContent = totals.percent+"%";
+  $("activeTasks").textContent =
+    state.tasks.filter(task=>remainingTask(task)>0).length+"개";
+
+  $("undoBtn").disabled = !undoState;
+  $("selectedDate").min = addDays(today(),-365);
+  $("selectedDate").max = addDays(today(),365);
+  $("selectedDate").value = selected;
+
+  renderWarnings();
+  renderWeek();
+  renderDay();
+  renderTasks();
+}
+
+function renderWarnings() {
+  const messages = [];
+
+  const reservedDates = new Set([
+    ...state.studies.map(s=>s.date),
+    ...state.logs.map(log=>log.date)
+  ]);
+
+  const overloaded = [...reservedDates]
+    .filter(date=>date>=today() && reservedMinutes(date)>state.settings.daily)
+    .sort();
+
+  for (const date of overloaded.slice(0,5)) {
+    messages.push(
+      `${shortDate(date)}: 공부 계획과 완료 기록만으로 하루 한도를 `+
+      `${reservedMinutes(date)-state.settings.daily}분 초과했어요. 공부 계획을 조정해 주세요.`
+    );
+  }
+  if (overloaded.length>5) {
+    messages.push(`이외 ${overloaded.length-5}일도 하루 한도를 초과했어요.`);
+  }
+
+  if (plan.mode==="no-buffer") {
+    messages.push("여유일을 확보하기 어려워, 수행평가를 마감 당일까지 배치했어요.");
+  }
+  if (plan.mode==="shortage") {
+    messages.push("시간이 부족해 수행평가의 앞 단계부터 우선 배치했어요.");
+  }
+
+  for (const item of plan.shortfalls.slice(0,10)) {
+    const task = state.tasks.find(t=>t.id===item.taskId);
+    messages.push(item.overdue
+      ? `${task.title}: 마감이 지나 남은 ${item.minutes}분을 배치하지 않았어요. 마감일을 수정해 주세요.`
+      : `${task.title}: ${item.minutes}분이 미배치 상태예요. 공부 시간을 조정하거나 하루 한도를 늘려 주세요.`
+    );
+  }
+  if (plan.shortfalls.length>10) {
+    messages.push(`이외 ${plan.shortfalls.length-10}개의 수행평가에도 미배치 시간이 있어요.`);
+  }
+
+  $("warnings").innerHTML = messages.length
+    ? `<div class="notice">
+        <strong>계획을 확인해 주세요</strong>
+        <ul>${messages.map(message=>`<li>${escapeHTML(message)}</li>`).join("")}</ul>
+      </div>`
+    : "";
+}
+
+function renderWeek() {
+  const start = monday(selected);
+
+  $("week").innerHTML = Array.from({length:7},(_,index)=>{
+    const date = addDays(start,index);
+    const totals = dayTotals(date);
+    const over = totals.total>state.settings.daily;
+    const width = Math.min(100,totals.total/state.settings.daily*100);
+
+    return `<button class="day-btn ${date===selected?"selected":""} ${date===today()?"today":""}"
+        data-action="select-date" data-date="${date}"
+        aria-pressed="${date===selected}">
+      <span class="day-name">${weekday(date)}</span>
+      <span class="day-num">${toDate(date).getDate()}</span>
+      <span class="day-load ${over?"over":""}">${totals.total}분</span>
+      <span class="day-bar"><i style="width:${width}%"></i></span>
+    </button>`;
+  }).join("");
+
+  $("prevWeek").disabled = addDays(selected,-7)<addDays(today(),-365);
+  $("nextWeek").disabled = addDays(selected,7)>addDays(today(),365);
+}
+
+function renderDay() {
+  const items = dayItems(selected);
+  const totals = dayTotals(selected);
+  const remaining = totals.total-totals.done;
+  const over = totals.total>state.settings.daily;
+
+  $("dayTitle").textContent = `${shortDate(selected)} (${weekday(selected)})`;
+  $("dayCapacity").textContent = `${totals.total} / ${state.settings.daily}분`;
+  $("dayCapacity").className = "badge"+(over?" red":"");
+  $("dayProgressBar").style.width = totals.percent+"%";
+  $("daySummary").textContent =
+    `완료 ${totals.done}분 · 남은 계획 ${remaining}분 · 완료율 ${totals.percent}%`;
+
+  $("bringOverdue").hidden =
+    !state.studies.some(s=>!s.done && s.date<today());
+
+  if (!items.length) {
+    $("dayList").innerHTML = `<div class="empty">
+      <strong>이 날짜에 등록된 계획이 없어요.</strong>
+      공부 계획을 추가하거나 수행평가를 등록해 보세요.<br>
+      수행평가는 역산 배치되어 다른 날짜에 있을 수 있어요.
+    </div>`;
+    return;
+  }
+
+  $("dayList").innerHTML = items.map(item=>`
+    <div class="todo ${item.done?"done":""}">
+      <input type="checkbox" ${item.done?"checked":""}
+        data-check="${item.kind}" data-id="${item.id}"
+        aria-label="${escapeHTML(item.title)} 완료">
+      <div class="todo-content">
+        <div class="todo-title">${escapeHTML(item.title)}</div>
+        <div class="todo-meta">
+          ${escapeHTML(item.subtitle)} · ${item.minutes}분
+          <span class="badge ${item.kind==="study"?"gray":""}">
+            ${item.kind==="study"?"공부":"수행평가"}
+          </span>
+        </div>
+      </div>
+      ${item.kind==="study" ? `<div class="todo-controls">
+        <button class="small" data-action="edit-study" data-id="${item.id}">수정</button>
+        <button class="small danger" data-action="delete-study" data-id="${item.id}">삭제</button>
+      </div>` : ""}
+    </div>
+  `).join("");
+}
+
+function deadlineBadge(task) {
+  if (remainingTask(task)===0) return '<span class="badge green">완료</span>';
+  const days = diffDays(task.due,today());
+  const text = days<0?`${-days}일 지남`:days===0?"오늘 마감":`D-${days}`;
+  return `<span class="badge ${days<=1?"red":""}">${text}</span>`;
+}
+
+function renderTasks() {
+  if (!state.tasks.length) {
+    $("taskList").innerHTML = `<div class="empty">
+      <strong>등록된 수행평가가 없어요.</strong>
+      마감일과 작업 시간을 입력하면 공부 계획과 함께 조율해요.
+    </div>`;
+    return;
+  }
+
+  const tasks = state.tasks.slice().sort((a,b)=>
+    Number(remainingTask(a)===0)-Number(remainingTask(b)===0)
+    || a.due.localeCompare(b.due)
+  );
+
+  $("taskList").innerHTML = tasks.map(task=>{
+    const total = taskTotal(task);
+    const left = remainingTask(task);
+    const percent = Math.round((total-left)/total*100);
+
+    return `<article class="task">
+      <div class="between">
+        <div class="task-title">${escapeHTML(task.title)}</div>
+        <div class="row">
+          <button class="small" data-action="edit-task" data-id="${task.id}">수정</button>
+          <button class="small danger" data-action="delete-task" data-id="${task.id}">삭제</button>
+        </div>
+      </div>
+      <div class="task-meta">
+        ${deadlineBadge(task)}
+        <span class="muted">
+          ${escapeHTML(task.subject||"과목 미지정")} · ${task.due} 마감
+        </span>
+      </div>
+      <div class="progress"
+        role="progressbar" aria-label="${escapeHTML(task.title)} 진행률"
+        aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
+        <i style="width:${percent}%"></i>
+      </div>
+      <div class="between">
+        <span class="help">${percent}% 완료</span>
+        <span class="help">${left}분 남음 / 전체 ${total}분</span>
+      </div>
+      <details>
+        <summary>작업 단계와 완료 시간 보기</summary>
+        ${task.steps.map(step=>`
+          <div class="step-status">
+            <span>${escapeHTML(step.title)}</span>
+            <span class="muted">${completedMinutes(step.id)}/${step.minutes}분</span>
+          </div>
+        `).join("")}
+      </details>
+    </article>`;
+  }).join("");
+}
+
+/* 공부 계획 추가·수정 */
+function openStudy(id=null) {
+  const study = id?state.studies.find(s=>s.id===id):null;
+  $("studyForm").reset();
+  $("studyEditingId").value = study?.id||"";
+  $("studyDialogTitle").textContent = study?"공부 계획 수정":"공부 계획 추가";
+  $("studyTitle").value = study?.title||"";
+  $("studySubject").value = study?.subject||"";
+  $("studyDate").min = addDays(today(),-365);
+  $("studyDate").max = addDays(today(),365);
+  $("studyDate").value = study?.date||selected;
+  $("studyMinutes").value = study?.minutes||30;
+  $("studyDialog").showModal();
+}
+
+$("studyForm").addEventListener("submit",event=>{
+  event.preventDefault();
+
+  const id = $("studyEditingId").value;
+  const previous = state.studies.find(s=>s.id===id);
+  const title = $("studyTitle").value.trim();
+  const date = $("studyDate").value;
+  const minutes = Number($("studyMinutes").value);
+
+  if (!title || !validDate(date)
+      || date<addDays(today(),-365) || date>addDays(today(),365)
+      || !Number.isInteger(minutes) || minutes<1 || minutes>1440) {
+    toast("공부 이름·날짜·시간을 확인해 주세요.");
+    return;
+  }
+  if (!previous && state.studies.length>=2000) {
+    toast("공부 계획은 최대 2,000개까지 보관할 수 있어요.");
+    return;
+  }
+
+  const study = {
+    id:previous?.id||uid(),
+    title,subject:$("studySubject").value.trim(),
+    date,minutes,done:previous?.done||false
+  };
+
+  change("공부 계획에 맞춰 수행평가 일정을 조율했어요.",()=>{
+    if (previous) state.studies = state.studies.map(s=>s.id===id?study:s);
+    else state.studies.push(study);
+    selected = date;
+  });
+
+  $("studyDialog").close();
+});
+
+/* 수행평가 단계 편집 */
+function addEditorStep(step={id:uid(),title:"",minutes:30}) {
+  const done = completedMinutes(step.id);
+  const row = document.createElement("div");
+  row.className = "step-editor";
+  row.dataset.id = step.id;
+  row.dataset.done = done;
+
+  row.innerHTML = `
+    <input class="step-title" aria-label="단계 이름" placeholder="작업 단계"
+      maxlength="100" value="${escapeHTML(step.title)}" required>
+    <input class="step-minutes" type="number" aria-label="예상 시간"
+      min="${Math.max(1,done)}" max="1440" step="1" value="${step.minutes}" required>
+    <span class="unit">분</span>
+    <button type="button" class="small danger" data-action="remove-step"
+      ${done>0?"disabled":""}
+      title="${done>0?"완료 기록이 있는 단계는 삭제할 수 없어요.":"단계 삭제"}">×</button>
+  `;
+  $("stepEditor").appendChild(row);
+  updateEstimate();
+}
+
+function loadTemplate(type) {
+  $("stepEditor").innerHTML = "";
+  templates[type].forEach(([title,minutes])=>
+    addEditorStep({id:uid(),title,minutes})
+  );
+}
+
+function updateEstimate() {
+  const total = [...$("stepEditor").children].reduce(
+    (sum,row)=>sum+(Number(row.querySelector(".step-minutes").value)||0),0
+  );
+  $("taskEstimate").textContent =
+    `전체 예상 시간 ${total}분 · 이미 완료한 시간보다 작게 줄일 수는 없어요.`;
+}
+
+function openTask(id=null) {
+  const task = id?state.tasks.find(t=>t.id===id):null;
+
+  $("taskForm").reset();
+  $("taskEditingId").value = task?.id||"";
+  $("taskDialogTitle").textContent = task?"수행평가 수정":"수행평가 추가";
+  $("taskTitle").value = task?.title||"";
+  $("taskSubject").value = task?.subject||"";
+  $("taskDue").min = today();
+  $("taskDue").max = addDays(today(),365);
+  $("taskDue").value = task?.due||addDays(today(),7);
+  $("taskType").value = task?.type||"report";
+  $("taskType").disabled = Boolean(task);
+
+  $("stepEditor").innerHTML = "";
+  if (task) task.steps.forEach(addEditorStep);
+  else loadTemplate("report");
+
+  $("taskDialog").showModal();
+}
+
+$("taskForm").addEventListener("submit",event=>{
+  event.preventDefault();
+
+  const id = $("taskEditingId").value;
+  const previous = state.tasks.find(t=>t.id===id);
+  const title = $("taskTitle").value.trim();
+  const due = $("taskDue").value;
+
+  if (!title || !validDate(due) || due<today() || due>addDays(today(),365)) {
+    toast("이름과 마감일을 확인해 주세요. 마감일은 오늘부터 1년 이내로 설정해요.");
+    return;
+  }
+
+  const steps = [...$("stepEditor").children].map(row=>({
+    id:row.dataset.id,
+    title:row.querySelector(".step-title").value.trim(),
+    minutes:Number(row.querySelector(".step-minutes").value)
+  }));
+
+  if (!steps.length || steps.length>20 || steps.some(step=>
+    !step.title || !Number.isInteger(step.minutes)
+    || step.minutes<1 || step.minutes>1440
+    || step.minutes<completedMinutes(step.id)
+  )) {
+    toast("작업 단계와 예상 시간을 확인해 주세요.");
+    return;
+  }
+
+  if (!previous && state.tasks.length>=200) {
+    toast("수행평가는 최대 200개까지 보관할 수 있어요.");
+    return;
+  }
+
+  const task = {
+    id:previous?.id||uid(),
+    title,subject:$("taskSubject").value.trim(),
+    due,type:$("taskType").value,
+    createdAt:previous?.createdAt||Date.now(),
+    steps
+  };
+
+  change("수행평가를 저장하고 공부 계획과 조율했어요.",()=>{
+    if (previous) state.tasks = state.tasks.map(t=>t.id===id?task:t);
+    else state.tasks.push(task);
+  });
+
+  $("taskDialog").close();
+});
+
+/* 체크박스 처리 */
+document.addEventListener("change",event=>{
+  const input = event.target;
+  const kind = input.dataset.check;
+  if (!kind) return;
+
+  if (kind==="study") {
+    const study = state.studies.find(s=>s.id===input.dataset.id);
+    if (!study) return;
+
+    change(input.checked?"공부를 완료했어요!":"공부 완료 표시를 취소했어요.",()=>{
+      study.done = input.checked;
+    });
+  }
+
+  if (kind==="block") {
+    const block = plan.blocks[Number(input.dataset.id)];
+    if (!block) return;
+
+    if (state.logs.length>=10000) {
+      input.checked = false;
+      toast("완료 기록 보관 한도에 도달했어요. 기록을 백업하고 정리해 주세요.");
+      return;
+    }
+
+    change("수행평가 작업을 완료했어요!",()=>{
+      state.logs.push({
+        id:uid(),taskId:block.taskId,stepId:block.stepId,
+        date:block.date,minutes:block.minutes
+      });
+    });
+  }
+
+  if (kind==="log") {
+    change("완료 표시를 취소하고 남은 일정을 다시 배치했어요.",()=>{
+      state.logs = state.logs.filter(log=>log.id!==input.dataset.id);
+    });
+  }
+});
+
+/* 공통 버튼 */
+document.addEventListener("click",event=>{
+  const close = event.target.closest("[data-close]");
+  if (close) {
+    $(close.dataset.close).close();
+    return;
+  }
+
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+
+  const action = button.dataset.action;
+  const id = button.dataset.id;
+
+  if (action==="select-date") {
+    const date = button.dataset.date;
+    if (date<addDays(today(),-365) || date>addDays(today(),365)) return;
+    selected = date;
+    render();
+  }
+
+  if (action==="edit-study") openStudy(id);
+  if (action==="edit-task") openTask(id);
+
+  if (action==="delete-study") {
+    if (!confirm("이 공부 계획을 삭제할까요?")) return;
+    change("공부 계획을 삭제하고 일정을 조율했어요.",()=>{
+      state.studies = state.studies.filter(s=>s.id!==id);
+    });
+  }
+
+  if (action==="delete-task") {
+    if (!confirm("이 수행평가와 해당 완료 기록을 모두 삭제할까요?")) return;
+    change("수행평가를 삭제했어요.",()=>{
+      state.tasks = state.tasks.filter(t=>t.id!==id);
+      state.logs = state.logs.filter(log=>log.taskId!==id);
+    });
+  }
+
+  if (action==="remove-step") {
+    if ($("stepEditor").children.length<=1) {
+      toast("최소 한 단계는 남겨 주세요.");
+      return;
+    }
+    const row = button.closest(".step-editor");
+    if (Number(row.dataset.done)>0) return;
+    row.remove();
+    updateEstimate();
+  }
+});
+
+$("addStudyBtn").onclick = ()=>openStudy();
+$("addStudyHere").onclick = ()=>openStudy();
+$("addTaskBtn").onclick = ()=>openTask();
+$("addTaskBtn2").onclick = ()=>openTask();
+
+$("taskType").onchange = ()=>loadTemplate($("taskType").value);
+$("stepEditor").addEventListener("input",updateEstimate);
+$("addStepBtn").onclick = ()=>{
+  if ($("stepEditor").children.length>=20) {
+    toast("작업 단계는 최대 20개까지 추가할 수 있어요.");
+    return;
+  }
+  addEditorStep();
+};
+
+$("selectedDate").onchange = ()=>{
+  const date = $("selectedDate").value;
+  if (!validDate(date)
+      || date<addDays(today(),-365)
+      || date>addDays(today(),365)) {
+    $("selectedDate").value = selected;
+    return;
+  }
+  selected = date;
+  render();
+};
+
+$("prevWeek").onclick = ()=>{
+  selected = addDays(selected,-7);
+  render();
+};
+$("nextWeek").onclick = ()=>{
+  selected = addDays(selected,7);
+  render();
+};
+$("goToday").onclick = ()=>{
+  selected = today();
+  render();
+};
+
+$("settingsForm").addEventListener("submit",event=>{
+  event.preventDefault();
+
+  const daily = Number($("dailyLimit").value);
+  if (!Number.isInteger(daily) || daily<10 || daily>720) return;
+
+  change("새 시간 설정에 맞춰 수행평가를 다시 배치했어요.",()=>{
+    state.settings = {
+      daily,
+      buffer:Number($("bufferDays").value),
+      weekend:$("useWeekend").checked
+    };
+  });
+});
+
+$("bringOverdue").onclick = ()=>{
+  const overdue = state.studies.filter(s=>!s.done && s.date<today());
+  if (!overdue.length) return;
+
+  if (!confirm(
+    `지난 날짜의 미완료 공부 ${overdue.length}개를 오늘로 옮길까요?\n`+
+    "오늘 시간 한도를 초과할 수 있어요."
+  )) return;
+
+  change("지난 미완료 공부를 오늘로 옮겼어요.",()=>{
+    overdue.forEach(s=>s.date=today());
+    selected = today();
+  });
+};
+
+$("undoBtn").onclick = ()=>{
+  if (!undoState) return;
+  state = JSON.parse(undoState);
+  undoState = null;
+  const saved = persist();
+  syncSettings();
+  render();
+  toast(saved?"직전 변경을 되돌렸어요.":"되돌렸지만 저장에 실패했어요. 백업해 주세요.");
+};
+
+/* 백업·복원 */
+$("backupBtn").onclick = ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)],{
+    type:"application/json"
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `한걸음-통합백업-${today()}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast("백업 다운로드를 요청했어요. 다운로드 폴더를 확인해 주세요.");
+};
+
+$("restoreBtn").onclick = ()=>$("restoreFile").click();
+
+$("restoreFile").addEventListener("change",async event=>{
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    if (file.size>5*1024*1024) {
+      throw new Error("5MB 이하의 백업 파일을 선택해 주세요.");
+    }
+    const restored = validateState(JSON.parse(await file.text()));
+    if (!confirm("현재 기록을 백업 파일의 내용으로 바꿀까요?")) return;
+
+    change("백업을 복원했어요.",()=>{
+      state = restored;
+      selected = today();
+    });
+  } catch (error) {
+    toast("복원 실패: "+error.message);
+  } finally {
+    event.target.value = "";
+  }
+});
+
+/* 예시 */
+$("demoBtn").onclick = ()=>{
+  if (state.studies.length>1996 || state.tasks.length>198) {
+    toast("예시를 추가할 보관 공간이 부족해요.");
+    return;
+  }
+  if ((state.studies.length || state.tasks.length)
+      && !confirm("기존 기록을 유지하고 예시 계획을 추가할까요?")) return;
+
+  change("예시를 추가했어요. 공부 시간을 바꾸며 일정 변화를 확인해 보세요.",()=>{
+    [
+      ["수학 문제집 32~35쪽","수학",0,45],
+      ["영어 지문 2개 분석","영어",0,30],
+      ["국어 문학 작품 복습","국어",1,40],
+      ["과학 개념 정리","과학",2,30]
+    ].forEach(([title,subject,offset,minutes])=>{
+      state.studies.push({
+        id:uid(),title,subject,date:addDays(today(),offset),
+        minutes,done:false
+      });
+    });
+
+    [
+      ["과학 탐구 보고서","과학","report",7],
+      ["사회 주제 발표","사회","presentation",11]
+    ].forEach(([title,subject,type,offset])=>{
+      state.tasks.push({
+        id:uid(),title,subject,type,
+        due:addDays(today(),offset),createdAt:Date.now(),
+        steps:templates[type].map(([title,minutes])=>({
+          id:uid(),title,minutes
+        }))
+      });
+    });
+
+    selected = today();
+  });
+};
+
+/* 날짜가 바뀌면 미완료 수행평가를 오늘 이후로 다시 계산합니다. */
+let renderedDate = today();
+
+function refreshDate() {
+  if (today()!==renderedDate) {
+    const wasToday = selected===renderedDate;
+    renderedDate = today();
+    if (wasToday) selected = today();
+    render();
+  }
+}
+document.addEventListener("visibilitychange",()=>{
+  if (!document.hidden) refreshDate();
+});
+setInterval(refreshDate,60000);
+
+syncSettings();
+render();
+
+if (startupError) {
+  $("storageStatus").textContent = "기존 기록을 읽지 못했어요. 백업 파일을 확인해 주세요.";
+  toast(startupError);
+}
+</script>
+</body>
+</html>
